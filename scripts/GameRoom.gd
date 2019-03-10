@@ -19,6 +19,10 @@ func _ready():
 	print (chip.global_transform.origin)
 	print(chip.global_transform.basis)
 	$UI.connect('start_game', $Board, 'on_start_game')
+	$Board.connect('game_over', self, 'on_game_over')
+
+func on_game_over(winner_id):
+	print('game over! winner: ', winner_id)
 
 func _process(delta):
 	if Input.is_action_pressed("ui_left"):
