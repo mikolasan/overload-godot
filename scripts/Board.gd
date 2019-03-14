@@ -17,7 +17,7 @@ const player_start_position = [
 	[[0,side_size-2], [1,side_size-1]]
 ]
 const n_players = 4
-const start_stack_size = 2
+const start_stack_size = 3
 
 var field
 var colliders = {}
@@ -45,6 +45,7 @@ func add_chip(stack):
 	colliders[id] = new_chip
 	new_chip.connect('clicked', self, 'on_chip_clicked')
 	new_chip.connect('moved', self, 'on_chip_moved')
+	connect('game_over', new_chip, 'on_game_over')
 	return new_chip
 
 func create_start_chips(field):
@@ -79,26 +80,31 @@ func on_chip_clicked(player_id, x, y):
 	print(player_id, ' ', x, ' ', y)
 
 func on_chip_moved(n_triggered, n_captured, captured_id):
-	if captured_id:
+	if captured_id != null:
 		player_stat[captured_id] -= n_captured
 		player_stat[current_player] += n_captured
 	exploding = exploding - 1 + n_triggered
 	if exploding == 0:
 		on_turn_finished()
+	else:
+		var next_player = define_next_player()
+		if next_player == null:
+			game_started = false
+			emit_signal('game_over', current_player)
 
 func on_start_game():
 	game_started = true
 	current_player = 0
 
-func next_player():
-	return (current_player + 1) % n_players
+func next_player(skip = 0):
+	return (current_player + 1 + skip) % n_players
 
-func has_next_player():
+func define_next_player():
 	for i in range(n_players - 1):
-		var next_player = next_player()
+		var next_player = next_player(i)
 		if player_stat[next_player] > 0:
-			return true
-	return false
+			return next_player
+	return null
 
 func _ready():
 	field = create_field(side_size, side_size)
@@ -108,11 +114,12 @@ func _ready():
 func on_turn_finished():
 	print('on_turn_finished')
 	print(player_stat)
-	if has_next_player():
-		current_player = next_player()
-		emit_signal('turn_finished')
-	else:
+	var next_player = define_next_player()
+	if next_player == null:
 		emit_signal('game_over', current_player)
+	else:
+		current_player = next_player
+		emit_signal('turn_finished')
 
 func select_chip(collider_id):
 	if current_player == null || exploding > 0:

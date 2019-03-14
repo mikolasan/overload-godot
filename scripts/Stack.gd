@@ -2,8 +2,8 @@ extends Spatial
 
 class_name Stack
 
-const chip_height = 0.5
 var chips = []
+var moving_chips = []
 var left
 var right
 var up
@@ -14,7 +14,7 @@ func set_player_id(id):
 	player_id = id
 func get_player_id():
 	return player_id
-	
+
 func add_chip(chip):
 	chip.set_stack(self)
 	if chip.player_id == null:
@@ -30,28 +30,24 @@ func add_chips(chips):
 	for chip in chips:
 		add_chip(chip)
 
+func push_moving_chip(chip):
+	self.moving_chips.append(chip)
+
+func pop_moving_chip():
+	self.moving_chips.pop_front()
+
 func move_chips(stack, chips):
 	if stack:
 		for chip in chips:
-			remove_child(chip)
-			var captured_id = stack.get_player_id()
-			var n_captured = stack.get_size()
-			stack.add_chip(chip)
-			if stack.get_player_id() == captured_id:
-				captured_id = null
-				n_captured = 0
-			chip.translate(Vector3(0, stack.get_size() * chip_height - chip.translation.y, 0))
-			chip.set_owner(stack)
-			if stack.full():
-				chip.finish_movement(stack.get_size(), n_captured, captured_id)
-				stack.explode()
-			else:
-				chip.finish_movement(0, n_captured, captured_id)
+			chip.move(self, stack)
 		return []
 	return chips
 
 func get_size():
 	return self.chips.size()
+
+func get_future_size():
+	return self.chips.size() + self.moving_chips.size()
 
 func full():
 	return get_size() >= 4
@@ -59,15 +55,15 @@ func full():
 func explode():
 	var flying_chips = self.chips.duplicate()
 	self.chips.clear()
-	var chips = [flying_chips[0]]
+	var chips = [flying_chips[3]]
 	chips = move_chips(self.left, chips)
-	chips.append(flying_chips[1])
+	chips.append(flying_chips[2])
 	chips = move_chips(self.right, chips)
 	if chips.size() == 1 && self.left:
 		chips = move_chips(self.left, chips)
-	chips.append(flying_chips[2])
+	chips.append(flying_chips[1])
 	chips = move_chips(self.up, chips)
-	chips.append(flying_chips[3])
+	chips.append(flying_chips[0])
 	chips = move_chips(self.down, chips)
 	if chips.size() == 1 && self.up:
 		move_chips(self.up, chips)
