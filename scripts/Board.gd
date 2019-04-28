@@ -43,8 +43,8 @@ func add_chip(stack):
 	new_chip.translate(Vector3(0, stack.get_size() * chip_height, 0))
 	var id = new_chip.get_collider_id()
 	colliders[id] = new_chip
-	new_chip.connect('clicked', self, 'on_chip_clicked')
-	new_chip.connect('moved', self, 'on_chip_moved')
+	#new_chip.connect('clicked', self, 'on_chip_clicked')
+	#new_chip.connect('moved', self, 'on_chip_moved')
 	#connect('game_over', new_chip, 'on_game_over')
 	return new_chip
 
