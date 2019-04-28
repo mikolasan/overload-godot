@@ -1,15 +1,14 @@
 extends Spatial
 
-signal clicked(player_id)
 signal moved(n_triggered, n_captured, captured_id)
 
 var material = preload("res://resources/Chip.material").duplicate()
 const chip_height = 0.5
 const player_color = [
-	Color.greenyellow,
-	Color.maroon,
-	Color.mediumpurple,
-	Color.gold
+	Color("04fdff"),
+	Color("febf56"),
+	Color("f93c8c"),
+	Color("fe9373")
 ]
 var player_id
 var stack
@@ -23,10 +22,6 @@ var game_started = true
 
 func _ready():
 	collider_id = $Mesh/Body.get_instance_id()
-	$Mesh/Body.connect('input_event', self, 'on_input_event')
-
-func on_input_event(camera, event, click_position, click_normal, shape_idx):
-	print('input_event', event)
 
 func get_player_id():
 	return self.player_id

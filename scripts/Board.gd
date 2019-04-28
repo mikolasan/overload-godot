@@ -30,10 +30,10 @@ func create_field(width, height):
 	var matrix = []
 	for x in range(width):
 		matrix.append([])
-		for y in range(height):
+		for z in range(height):
 			var stack = Stack.new()
 			add_child(stack)
-			stack.translate(Vector3(x * chip_width, 0, y * chip_width))
+			stack.translate(Vector3(x * chip_width, 0, z * chip_width))
 			matrix[x].append(stack)
 	return matrix
 
@@ -45,7 +45,7 @@ func add_chip(stack):
 	colliders[id] = new_chip
 	new_chip.connect('clicked', self, 'on_chip_clicked')
 	new_chip.connect('moved', self, 'on_chip_moved')
-	connect('game_over', new_chip, 'on_game_over')
+	#connect('game_over', new_chip, 'on_game_over')
 	return new_chip
 
 func create_start_chips(field):
@@ -63,18 +63,18 @@ func create_start_chips(field):
 
 func set_links(field):
 	for x in range(len(field)):
-		for y in range(len(field[x])):
-			var stack = field[x][y]
+		for z in range(len(field[x])):
+			var stack = field[x][z]
 			var x_size = field.size()
 			if x - 1 >= 0:
-				stack.left = field[x - 1][y]
+				stack.left = field[x - 1][z]
 			if x + 1 < x_size:
-				stack.right = field[x + 1][y]
-			var y_size = field[x].size()
-			if y - 1 >= 0:
-				stack.up = field[x][y - 1]
-			if y + 1 < y_size:
-				stack.down = field[x][y + 1]
+				stack.right = field[x + 1][z]
+			var z_size = field[x].size()
+			if z - 1 >= 0:
+				stack.up = field[x][z - 1]
+			if z + 1 < z_size:
+				stack.down = field[x][z + 1]
 
 func on_chip_clicked(player_id, x, y):
 	print(player_id, ' ', x, ' ', y)
@@ -110,6 +110,7 @@ func _ready():
 	field = create_field(side_size, side_size)
 	create_start_chips(field)
 	set_links(field)
+	on_start_game()
 
 func on_turn_finished():
 	print('on_turn_finished')
@@ -135,3 +136,8 @@ func select_chip(collider_id):
 				stack.explode()
 			else:
 				on_turn_finished()
+
+func calc_center_point():
+	var x_max = field.size() + chip_width / 2.0
+	var z_max = field[0].size() + chip_width / 2.0
+	return Vector3(x_max / 2.0, 0.0, z_max / 2.0)
