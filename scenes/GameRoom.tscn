@@ -37,7 +37,6 @@ mouse_filter = 1
 
 [node name="OmniLight" type="OmniLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 4, 7.5 )
-visible = false
 light_color = Color( 1, 0.898039, 0.235294, 1 )
 light_energy = 1.29
 shadow_enabled = true
@@ -47,7 +46,6 @@ omni_attenuation = 2.2974
 
 [node name="OmniLight4" type="OmniLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, 4, 10.25 )
-visible = false
 light_color = Color( 1, 0.898039, 0.235294, 1 )
 light_energy = 1.29
 shadow_enabled = true
@@ -57,7 +55,6 @@ omni_attenuation = 2.2974
 
 [node name="OmniLight2" type="OmniLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 4, 0.25 )
-visible = false
 light_color = Color( 1, 0.898039, 0.235294, 1 )
 light_energy = 1.29
 shadow_enabled = true
@@ -67,7 +64,6 @@ omni_attenuation = 2.2974
 
 [node name="OmniLight3" type="OmniLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 4, -5 )
-visible = false
 light_color = Color( 1, 0.898039, 0.235294, 1 )
 light_energy = 1.29
 shadow_enabled = true

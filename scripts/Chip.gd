@@ -2,14 +2,17 @@ extends Spatial
 
 signal moved(n_triggered, n_captured, captured_id)
 
-var material = preload("res://resources/Chip.material").duplicate()
+const TYPE_FRAGMENT = 1
 const chip_height = 0.5
-const player_color = [
-	Color("04fdff"),
-	Color("febf56"),
-	Color("f93c8c"),
-	Color("fe9373")
+var material: ShaderMaterial = preload('res://resources/better_chip.material').duplicate()
+#var shader: VisualShader = preload('res://resources/chip_visualshader.res').duplicate()
+var player_color = [
+	preload('res://resources/color1.png'),
+	preload('res://resources/color2.png'),
+	preload('res://resources/color3.png'),
+	preload('res://resources/color4.png'),
 ]
+
 var player_id
 var stack
 var collider_id
@@ -28,8 +31,17 @@ func get_player_id():
 
 func set_player_id(id):
 	player_id = id
-	material.albedo_color = player_color[id]
+	
+#	var list = shader.get_node_list(TYPE_FRAGMENT)
+#	for i in list:
+#		var node = shader.get_node(TYPE_FRAGMENT, i)
+#		if node.is_class('VisualShaderNodeTexture'):
+#			node.texture = player_color[id]
+#			break
+#	material.shader = shader
+	material.albedo_texture = player_color[id]
 	$Mesh.set_surface_material(0, material)
+	
 	stack.set_player_id(id)
 
 func set_stack(stack):
