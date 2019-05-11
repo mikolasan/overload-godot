@@ -1,61 +1,46 @@
-extends Spatial
-
 class_name Stack
 
-var chips = []
-var moving_chips = []
-var left
-var right
-var up
-var down
-var player_id setget set_player_id
+var player_id: int setget set_player_id, get_player_id
+var id: int
+var chips: Array = []
+var left: int
+var right: int
+var up: int
+var down: int
 
-func set_player_id(id):
+func set_player_id(id: int):
 	player_id = id
+
 func get_player_id():
 	return player_id
-
-func add_chip(chip):
-	chip.set_stack(self)
-	if chip.player_id == null:
-		chip.set_player_id(player_id)
-	elif chip.player_id != player_id:
-		player_id = chip.player_id
-		for chip in chips:
-			chip.set_player_id(player_id)
-	self.chips.append(chip)
-	self.add_child(chip)
-
-func add_chips(chips):
-	for chip in chips:
-		add_chip(chip)
-
-func push_moving_chip(chip):
-	self.moving_chips.append(chip)
-
-func pop_moving_chip():
-	self.moving_chips.pop_front()
-
-func move_chips(stack, chips):
-	if stack:
-		for chip in chips:
-			chip.move(self, stack)
-		return []
-	return chips
 
 func get_size():
 	return self.chips.size()
 
-func get_future_size():
-	return self.chips.size() + self.moving_chips.size()
-
 func full():
 	return get_size() >= 4
 
-func explode():
+func add_chip(chip: Chip):
+	chip.set_stack_id(id)
+	if chip.get_player_id() == null:
+		chip.set_player_id(player_id)
+	elif chip.get_player_id() != player_id:
+		player_id = chip.get_player_id()
+		for chip in chips:
+			chip.set_player_id(player_id)
+	self.chips.append(chip)
+
+func move_chips(to_stack: int, chips: Array) -> Array:
+	if stack:
+		for chip in chips:
+			chip.move(id, to_stack)
+		return []
+	return chips
+
+func explode() -> void:
 	var flying_chips = self.chips.duplicate()
 	self.chips.clear()
-	var chips = [flying_chips[3]]
+	var chips: Array = [flying_chips[3]]
 	chips = move_chips(self.left, chips)
 	chips.append(flying_chips[2])
 	chips = move_chips(self.right, chips)
@@ -67,3 +52,13 @@ func explode():
 	chips = move_chips(self.down, chips)
 	if chips.size() == 1 && self.up:
 		move_chips(self.up, chips)
+
+static func create_logic_field(width, height) -> Array:
+	var matrix = []
+	for x in range(width):
+		matrix.append([])
+		for z in range(height):
+			var stack = Stack.new()
+			matrix[x].append(stack)
+	return matrix
+

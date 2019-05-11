@@ -9,13 +9,31 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Reference",
+"class": "Chip",
+"language": "GDScript",
+"path": "res://scripts/Chip.gd"
+}, {
 "base": "Spatial",
+"class": "ChipInstance",
+"language": "GDScript",
+"path": "res://scripts/ChipInstance.gd"
+}, {
+"base": "Reference",
 "class": "Stack",
 "language": "GDScript",
 "path": "res://scripts/Stack.gd"
+}, {
+"base": "Spatial",
+"class": "StackInstance",
+"language": "GDScript",
+"path": "res://scripts/StackInstance.gd"
 } ]
 _global_script_class_icons={
-"Stack": ""
+"Chip": "",
+"ChipInstance": "",
+"Stack": "",
+"StackInstance": ""
 }
 
 [application]

@@ -4,20 +4,18 @@ signal turn_finished
 signal game_over(winner)
 
 var Chip = preload("res://scenes/Chip.tscn")
-var Stack = load("res://scripts/Stack.gd")
 
 const chip_width = 2.0
 const chip_height = 0.5
 
 const side_size = 5
-const player_start_position = [
-	[[0,1], [1,0]],
-	[[side_size-1,side_size-2], [side_size-2,side_size-1]],
-	[[side_size-1,1], [side_size-2,0]],
-	[[0,side_size-2], [1,side_size-1]]
+const start_configuration = [
+	[[0,1,3], [1,0,3]],
+	[[side_size-1,side_size-2,3], [side_size-2,side_size-1,3]],
+	[[side_size-1,1,3], [side_size-2,0,3]],
+	[[0,side_size-2,3], [1,side_size-1,3]]
 ]
 const n_players = 4
-const start_stack_size = 3
 
 var field
 var colliders = {}
@@ -26,16 +24,13 @@ var player_stat = []
 var game_started = false
 var exploding = 0
 
-func create_field(width, height):
-	var matrix = []
-	for x in range(width):
-		matrix.append([])
-		for z in range(height):
-			var stack = Stack.new()
+func add_stacks(field):
+	for x in range(len(field)):
+		for z in range(len(field[x])):
+			var stack = StackInstance.new()
 			add_child(stack)
 			stack.translate(Vector3(x * chip_width, 0, z * chip_width))
-			matrix[x].append(stack)
-	return matrix
+			field[x][z] = stack
 
 func add_chip(stack):
 	var new_chip = Chip.instance()
@@ -51,13 +46,14 @@ func add_chip(stack):
 func create_start_chips(field):
 	for player_id in range(n_players):
 		player_stat.append(0)
-		var start_position = player_start_position[player_id]
-		for stack_position in start_position:
-			var x = stack_position[0]
-			var y = stack_position[1]
+		var player_configuration = start_configuration[player_id]
+		for stack_configuration in player_configuration:
+			var x = stack_configuration[0]
+			var y = stack_configuration[1]
+			var size = stack_configuration[2]
 			var stack = field[x][y]
-			stack.set_player_id(player_id) # initial player id
-			for stack_id in range(start_stack_size):
+			stack.set_player_id(player_id)
+			for stack_id in range(size):
 				add_chip(stack)
 				player_stat[player_id] += 1
 
@@ -107,7 +103,8 @@ func define_next_player():
 	return null
 
 func _ready():
-	field = create_field(side_size, side_size)
+	var logic_field = Stack.create_stacks(side_size, side_size)
+	field = add_stacks(logic_field)
 	create_start_chips(field)
 	set_links(field)
 	on_start_game()
@@ -141,3 +138,17 @@ func calc_center_point():
 	var x_max = field.size() + chip_width / 2.0
 	var z_max = field[0].size() + chip_width / 2.0
 	return Vector3(x_max / 2.0, 0.0, z_max / 2.0)
+
+func estimate_turn(player_id, x, y):
+	var score = estimate_player_score(player_id)
+	var new_stat = estimate_future_field(player_id, x, y)
+	var new_score = new_stat[player_id]
+	return new_score - score
+
+func estimate_player_score(player_id):
+	return player_stat[player_id]
+
+func estimate_future_field(player_id, x, y):
+	var stat = player_stat.duplicate()
+	stat[player_id] += 1
+	
