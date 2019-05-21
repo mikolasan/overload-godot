@@ -3,11 +3,6 @@ extends Spatial
 signal turn_finished
 signal game_over(winner)
 
-var Chip = preload("res://scenes/Chip.tscn")
-
-const chip_width = 2.0
-const chip_height = 0.5
-
 const side_size = 5
 const start_configuration = [
 	[[0,1,3], [1,0,3]],
@@ -18,33 +13,32 @@ const start_configuration = [
 const n_players = 4
 
 var field
+var logic_field
 var colliders = {}
 var current_player
 var player_stat = []
 var game_started = false
 var exploding = 0
 
-func add_stacks(field):
-	for x in range(len(field)):
-		for z in range(len(field[x])):
+func get_logic_field():
+	return field
+
+func add_chip_to_field(x, y, field = null):
+	pass
+
+func create_field(node: Spatial, width: int, height: int) -> Array:
+	var matrix = []
+	for x in range(width):
+		matrix.append([])
+		for z in range(height):
 			var stack = StackInstance.new()
-			add_child(stack)
-			stack.translate(Vector3(x * chip_width, 0, z * chip_width))
-			field[x][z] = stack
+			stack.set_field_pos(Vector2(x, z))
+			node.add_child(stack)
+			matrix[x].append(stack)
+	return matrix
 
-func add_chip(stack):
-	var new_chip = Chip.instance()
-	stack.add_chip(new_chip)
-	new_chip.translate(Vector3(0, stack.get_size() * chip_height, 0))
-	var id = new_chip.get_collider_id()
-	colliders[id] = new_chip
-	#new_chip.connect('clicked', self, 'on_chip_clicked')
-	new_chip.connect('moved', self, 'on_chip_moved')
-	#connect('game_over', new_chip, 'on_game_over')
-	return new_chip
-
-func create_start_chips(field):
-	for player_id in range(n_players):
+func create_start_chips(field, start_configuration):
+	for player_id in range(start_configuration.size()):
 		player_stat.append(0)
 		var player_configuration = start_configuration[player_id]
 		for stack_configuration in player_configuration:
@@ -53,24 +47,35 @@ func create_start_chips(field):
 			var size = stack_configuration[2]
 			var stack = field[x][y]
 			stack.set_player_id(player_id)
-			for stack_id in range(size):
-				add_chip(stack)
-				player_stat[player_id] += 1
+			stack.add_chips(size, 0)
+			player_stat[player_id] += size
 
 func set_links(field):
 	for x in range(len(field)):
 		for z in range(len(field[x])):
-			var stack = field[x][z]
-			var x_size = field.size()
+			var adjacent_stacks = []
 			if x - 1 >= 0:
-				stack.left = field[x - 1][z]
-			if x + 1 < x_size:
-				stack.right = field[x + 1][z]
-			var z_size = field[x].size()
+				adjacent_stacks.append(Vector2(x - 1, z))
+			else:
+				adjacent_stacks.append(null)
+			
+			if x + 1 < field.size():
+				adjacent_stacks.append(Vector2(x + 1, z))
+			else:
+				adjacent_stacks.append(null)
+			
 			if z - 1 >= 0:
-				stack.up = field[x][z - 1]
-			if z + 1 < z_size:
-				stack.down = field[x][z + 1]
+				adjacent_stacks.append(Vector2(x, z - 1))
+			else:
+				adjacent_stacks.append(null)
+			
+			if z + 1 < field[x].size():
+				adjacent_stacks.append(Vector2(x, z + 1))
+			else:
+				adjacent_stacks.append(null)
+			
+			var stack = field[x][z]
+			stack.set_adjacent_stacks(adjacent_stacks)
 
 func on_chip_clicked(player_id, x, y):
 	print(player_id, ' ', x, ' ', y)
@@ -86,7 +91,6 @@ func on_chip_moved(n_triggered, n_captured, captured_id):
 		var next_player = define_next_player()
 		if next_player == null:
 			game_started = false
-			emit_signal('game_over', current_player)
 
 func on_start_game():
 	game_started = true
@@ -103,8 +107,7 @@ func define_next_player():
 	return null
 
 func _ready():
-	var logic_field = Stack.create_stacks(side_size, side_size)
-	field = add_stacks(logic_field)
+	field = create_field(self, side_size, side_size)
 	create_start_chips(field)
 	set_links(field)
 	on_start_game()
@@ -126,7 +129,7 @@ func select_chip(collider_id):
 		var chip = colliders[collider_id]
 		if chip.get_player_id() == current_player:
 			var stack = chip.in_stack()
-			add_chip(stack)
+			stack.add_chip(stack.size())
 			player_stat[current_player] += 1
 			if stack.full():
 				exploding = stack.get_size()
@@ -151,4 +154,15 @@ func estimate_player_score(player_id):
 func estimate_future_field(player_id, x, y):
 	var stat = player_stat.duplicate()
 	stat[player_id] += 1
-	
+	var field = get_logic_field()
+	var new_field = add_chip_to_field(x, y, field)
+
+func create_logic_field(width, height) -> Array:
+	var matrix = []
+	for x in range(width):
+		matrix.append([])
+		for z in range(height):
+			var stack = Stack.new()
+			matrix[x].append(stack)
+	return matrix
+

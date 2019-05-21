@@ -70,4 +70,3 @@ shadow_enabled = true
 shadow_color = Color( 0.192157, 0.188235, 0.188235, 1 )
 omni_range = 15.6
 omni_attenuation = 2.2974
-

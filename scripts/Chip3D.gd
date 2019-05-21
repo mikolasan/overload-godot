@@ -1,12 +1,11 @@
 extends Spatial
-class_name ChipInstance
 
 signal moved(n_triggered, n_captured, captured_id)
 
 const TYPE_FRAGMENT = 1
-const chip_height = 0.5
+const CHIP_HEIGHT = 0.5
 var material: ShaderMaterial = preload('res://resources/better_chip.material').duplicate()
-var player_color = [
+var player_color: Array = [
 	preload('res://resources/color1.png'),
 	preload('res://resources/color2.png'),
 	preload('res://resources/color3.png'),
@@ -19,26 +18,25 @@ var from_origin
 var to_stack
 var to_origin
 var t = null
-var game_started = true
-var chip
+var game_started: bool = true
 
 
 func _ready():
-	chip = Chip.new()
-	chip.collider_id = $Mesh/Body.get_instance_id()
-
-func get_logic_object() -> Chip:
-	return chip
+	collider_id = $Mesh/Body.get_instance_id()
 
 func get_collider_id():
 	return collider_id
 
-func on_player_id_changed(id):
-	material.albedo_texture = player_color[id]
+func on_player_id_changed(id: int) -> void:
+	var t: Texture = player_color[id]
+	material.albedo_texture = t
 	$Mesh.set_surface_material(0, material)
 
 func on_click():
 	pass
+
+func set_stack_position(position: int) -> void:
+	translate(Vector3(0, position * CHIP_HEIGHT, 0))
 
 func move(from_stack, to_stack):
 	to_stack.push_moving_chip(self)
@@ -46,7 +44,7 @@ func move(from_stack, to_stack):
 	self.to_stack = to_stack
 	from_origin = transform.origin
 	to_origin = to_stack.transform.origin - from_stack.transform.origin
-	to_origin.y = to_stack.get_future_size() * chip_height
+	to_origin.y = to_stack.get_future_size() * CHIP_HEIGHT
 	t = 0
 
 func on_landed(from_stack, to_stack):
@@ -61,14 +59,14 @@ func on_landed(from_stack, to_stack):
 	if to_stack.get_player_id() == captured_id:
 		captured_id = null
 		n_captured = 0
-	translate(Vector3(0, to_stack.get_size() * chip_height - self.translation.y, 0))
+	translate(Vector3(0, to_stack.get_size() * CHIP_HEIGHT - self.translation.y, 0))
 	set_owner(to_stack)
 	if to_stack.full():
 		finish_movement(to_stack.get_size(), n_captured, captured_id)
-		if chip.game_started:
+		if game_started:
 			to_stack.explode()
 		else:
-			chip.game_started = true
+			game_started = true
 	else:
 		finish_movement(0, n_captured, captured_id)
 
